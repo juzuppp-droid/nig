@@ -1,1 +1,133 @@
-aaaaaa
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cotton Timber</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <h1>Cotton Timber</h1>
+        <p class="app__tagline">Klikaj błyskawicznie, zbieraj bawełnę i unikaj pustych krzaków.</p>
+      </header>
+
+      <section id="view-auth" class="view view--active">
+        <form id="authForm" class="card auth" autocomplete="off">
+          <h2>Wejdź na plantację</h2>
+          <label class="input-group">
+            <span>Twój nick</span>
+            <input id="nickname" name="nickname" type="text" maxlength="16" minlength="2" required placeholder="np. BawełnianyLord" />
+          </label>
+          <fieldset class="skins">
+            <legend>Wybierz skin</legend>
+            <div id="skinOptions" class="skins__options"></div>
+          </fieldset>
+          <button type="submit" class="primary">Wejdź</button>
+        </form>
+      </section>
+
+      <section id="view-lobbies" class="view hidden">
+        <div class="layout">
+          <aside class="card panel">
+            <h2>Twoje ustawienia</h2>
+            <p><strong>Nick:</strong> <span id="playerNick"></span></p>
+            <p><strong>Skin:</strong> <span id="playerSkin"></span></p>
+            <button id="createLobbyBtn" class="primary">Stwórz nowe lobby</button>
+            <button id="startEndlessBtn" class="ghost" type="button">Tryb nieskończony</button>
+          </aside>
+          <div class="card panel">
+            <div class="panel__header">
+              <h2>Aktywne lobby</h2>
+              <button id="refreshLobbiesBtn" class="ghost ghost--small" type="button">Odśwież</button>
+            </div>
+            <ul id="lobbyList" class="list list--lobbies">
+              <li class="placeholder">Brak otwartych gier. Stwórz własne lobby!</li>
+            </ul>
+          </div>
+          <aside class="card panel">
+            <h2>Top zwycięzcy</h2>
+            <ul id="leaderboardList" class="list list--compact">
+              <li class="placeholder">Zagraj pierwszą rundę, by zobaczyć ranking.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="view-lobby" class="view hidden">
+        <div class="card lobby">
+          <div class="lobby__header">
+            <div>
+              <h2>Lobby <span id="lobbyIdLabel"></span></h2>
+              <p id="lobbyStatusLabel">Oczekiwanie na graczy...</p>
+            </div>
+            <div class="lobby__actions">
+              <button id="leaveLobbyBtn" class="ghost" type="button">Wyjdź</button>
+              <button id="startLobbyBtn" class="primary" type="button" disabled>Start gry</button>
+            </div>
+          </div>
+          <div class="lobby__body">
+            <div>
+              <h3>Gracze</h3>
+              <ul id="playerList" class="list list--players"></ul>
+            </div>
+            <div class="lobby__info">
+              <p><strong>Czas rundy:</strong> 60 sekund</p>
+              <p><strong>Maks. graczy:</strong> <span id="lobbyMaxSlots">4</span></p>
+              <div id="countdownContainer" class="countdown hidden">
+                <span>Start za</span>
+                <strong id="countdownValue">5</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-game" class="view hidden">
+        <div class="game-ui">
+          <div class="game-ui__bar">
+            <div id="timeBlock"><span class="label" id="timeLabel">Pozostały czas</span><strong id="gameTime">60</strong></div>
+            <div><span class="label">Twój wynik</span><strong id="gameScore">0</strong></div>
+            <div id="opponentBlock"><span class="label">Rywale</span><strong id="opponentScores">-</strong></div>
+          </div>
+          <div id="gameCanvasWrapper" class="game-board">
+            <div id="gaugeBar" class="gauge hidden"><div id="gaugeFill"></div></div>
+            <div id="gaugeLabel" class="gauge__label hidden">Tempo</div>
+            <div class="cotton" id="cottonStack"></div>
+            <div class="player" id="timberPlayer">
+              <div class="player__body"></div>
+            </div>
+            <div class="controls-hint">Kliknij / dotknij stronę z bawełną i omijaj puste krzaki.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-result" class="view hidden">
+        <div class="card result">
+          <h2>Zakończono rundę</h2>
+          <p id="resultHeadline"></p>
+          <div class="result__scores">
+            <h3 id="resultScoresTitle">Wyniki rundy</h3>
+            <ul id="resultPlayerList" class="list list--players"></ul>
+          </div>
+          <div class="result__leaderboard">
+            <h3 id="resultLeaderboardTitle">Najwięcej zwycięstw</h3>
+            <ul id="resultLeaderboard" class="list list--compact"></ul>
+          </div>
+          <div class="result__actions">
+            <button id="playAgainBtn" class="primary">Zagraj ponownie</button>
+            <button id="backToMenuBtn" class="ghost">Wróć do lobby</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script src="game.js" type="module"></script>
+  </body>
+</html>
