@@ -18,12 +18,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const FieldValue = firebase.firestore.FieldValue;
 
-const SKINS = [
-  { id: "sky", label: "Błękitny zbieracz", color: "#2563eb" },
-  { id: "sunset", label: "Zachód słońca", color: "#f97316" },
-  { id: "forest", label: "Leśny farmer", color: "#16a34a" },
-  { id: "berry", label: "Jagodowa brygada", color: "#a855f7" }
-];
+const SKINS = [{ id: "classic", label: "Standardowy zbieracz", color: "#2563eb" }];
 
 const ENDLESS_STORAGE_KEY = "cotton_endless_scores";
 const MAX_ENDLESS_RESULTS = 20;
@@ -34,6 +29,11 @@ const COTTON_FULL_SRC = "bawelna-full.png";
 const COTTON_EMPTY_SRC = "pusty.png";
 const PLAYER_IDLE_SRC = "postac1.png";
 const PLAYER_SWING_SRC = "postac1-uderzenie.png";
+const PLAYER_OFFSET_PRESETS = {
+  wide: { left: "-255%", right: "132%" },
+  medium: { left: "-218%", right: "104%" },
+  narrow: { left: "-188%", right: "78%" },
+};
 
 function safeStorageSet(key, value) {
   try {
@@ -202,6 +202,13 @@ function initSkinOptions() {
     if (index === 0) label.classList.add("is-selected");
     elements.skinOptions.appendChild(label);
   });
+  if (SKINS.length === 1) {
+    const notice = document.createElement("p");
+    notice.className = "skins__notice";
+    notice.textContent = "Wkrótce pojawią się kolejne stroje. Na start grasz klasycznym bohaterem.";
+    elements.skinOptions.appendChild(notice);
+  }
+  setPlayerColor();
 }
 
 function getSkinById(id) {
@@ -302,10 +309,13 @@ function fetchLeaderboard(target = elements.leaderboardList) {
         target.innerHTML = '<li class="placeholder">Brak wpisów w tabeli zwycięstw.</li>';
         return;
       }
+      let rank = 0;
       const fragment = document.createDocumentFragment();
       snap.forEach((doc) => {
+        rank += 1;
         const data = doc.data();
         const li = document.createElement("li");
+        li.dataset.rank = `${rank}`;
         li.innerHTML = `<span>${data.nick || "Anonim"}</span><div><strong>${data.wins || 0}</strong> wygranych</div>`;
         fragment.appendChild(li);
       });
@@ -688,6 +698,13 @@ function createCottonCell(type, side) {
   return cell;
 }
 
+function getPlayerOffsets() {
+  const width = window.innerWidth || document.documentElement.clientWidth || 1024;
+  if (width <= 540) return PLAYER_OFFSET_PRESETS.narrow;
+  if (width <= 920) return PLAYER_OFFSET_PRESETS.medium;
+  return PLAYER_OFFSET_PRESETS.wide;
+}
+
 function attachInputListeners() {
   window.addEventListener("keydown", handleKeyDown);
   elements.gameCanvasWrapper?.addEventListener("pointerdown", handlePointerDown);
@@ -745,10 +762,11 @@ function performMove(side) {
 
 function setPlayerSide(side) {
   state.game.side = side;
-  if (side === "right") {
-    elements.timberPlayer.classList.add("player--right");
-  } else {
-    elements.timberPlayer.classList.remove("player--right");
+  const offsets = getPlayerOffsets();
+  const target = offsets[side] || offsets.left;
+  if (elements.timberPlayer) {
+    elements.timberPlayer.style.setProperty("--player-offset", target);
+    elements.timberPlayer.classList.toggle("player--right", side === "right");
   }
 }
 
@@ -1059,8 +1077,9 @@ function showResults(lobby) {
   elements.resultHeadline.textContent = `Wygrywa ${winnerNick}!`;
   const players = [...state.latestPlayers].sort((a, b) => (b.score || 0) - (a.score || 0));
   const fragment = document.createDocumentFragment();
-  players.forEach((player) => {
+  players.forEach((player, index) => {
     const li = document.createElement("li");
+    li.dataset.rank = `${index + 1}`;
     li.innerHTML = `<span>${player.nick}</span><div><strong>${player.score || 0}</strong> pkt · ${translateState(player.state)}</div>`;
     fragment.appendChild(li);
   });
@@ -1227,7 +1246,8 @@ function showEndlessResult(reason) {
   const fragment = document.createDocumentFragment();
   scores.slice(0, 5).forEach((score, index) => {
     const item = document.createElement("li");
-    item.innerHTML = `<span>${index + 1}. ${score.nick}</span><div><strong>${score.score}</strong> pkt · ${formatElapsed(score.time)}</div>`;
+    item.dataset.rank = `${index + 1}`;
+    item.innerHTML = `<span>${score.nick}</span><div><strong>${score.score}</strong> pkt · ${formatElapsed(score.time)}</div>`;
     fragment.appendChild(item);
   });
   elements.resultLeaderboard.innerHTML = "";
@@ -1259,7 +1279,6 @@ function handleExistingCredentials() {
       input.parentElement.classList.toggle("is-selected", input.checked);
     });
   }
-  setPlayerColor();
 }
 
 function attachEventListeners() {
@@ -1279,10 +1298,15 @@ function attachEventListeners() {
   if (elements.cashOutBtn) {
     elements.cashOutBtn.addEventListener("click", () => finishGame());
   }
+  window.addEventListener("resize", handleResize);
 }
 
 function updatePlayerPosition() {
   setPlayerSide(state.game.side);
+}
+
+function handleResize() {
+  setPlayerSide(state.game.side || "left");
 }
 
 function bootstrap() {
