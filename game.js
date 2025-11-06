@@ -18,8 +18,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const FieldValue = firebase.firestore.FieldValue;
 
-const SKINS = [{ id: "classic", label: "Standardowy zbieracz", color: "#2563eb" }];
-
 const ENDLESS_STORAGE_KEY = "cotton_endless_scores";
 const MAX_ENDLESS_RESULTS = 20;
 const INITIAL_STACK_SIZE = 12;
@@ -34,6 +32,15 @@ const PLAYER_OFFSET_PRESETS = {
   medium: { left: "-218%", right: "104%" },
   narrow: { left: "-188%", right: "78%" },
 };
+
+const SKINS = [
+  {
+    id: "classic",
+    label: "Standardowy zbieracz",
+    color: "#2563eb",
+    preview: PLAYER_IDLE_SRC,
+  },
+];
 
 function safeStorageSet(key, value) {
   try {
@@ -188,7 +195,16 @@ function initSkinOptions() {
     if (index === 0) input.checked = true;
     const preview = document.createElement("div");
     preview.className = "skin-option__preview";
-    preview.style.background = skin.color;
+    if (skin.preview) {
+      preview.style.backgroundImage = `url(${skin.preview})`;
+      preview.style.backgroundSize = "contain";
+      preview.style.backgroundPosition = "center";
+      preview.style.backgroundRepeat = "no-repeat";
+      preview.style.backgroundColor = "#fff";
+      preview.dataset.hasImage = "true";
+    } else {
+      preview.style.background = skin.color;
+    }
     const title = document.createElement("span");
     title.textContent = skin.label;
     label.append(input, preview, title);
