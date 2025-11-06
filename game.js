@@ -566,6 +566,17 @@ function clearCountdown() {
   state.countdownTimer = null;
 }
 
+function setCountdown(seconds) {
+  if (!elements.countdownContainer || !elements.countdownValue) return;
+  if (typeof seconds === "number" && seconds > 0) {
+    elements.countdownContainer.classList.remove("hidden");
+    elements.countdownValue.textContent = Math.ceil(seconds);
+  } else {
+    elements.countdownContainer.classList.add("hidden");
+    elements.countdownValue.textContent = "";
+  }
+}
+
 function clearPendingStart() {
   if (state.pendingStartTimeout) clearTimeout(state.pendingStartTimeout);
   state.pendingStartTimeout = null;
